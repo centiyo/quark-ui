@@ -1,10 +1,10 @@
 import { Tooltip, Tag, Space } from 'antd';
-import { QuestionCircleOutlined } from '@ant-design/icons';
 import React from 'react';
-import { useModel, SelectLang } from 'umi';
+import { useModel, SelectLang, Link } from 'umi';
 import Avatar from './AvatarDropdown';
 import HeaderSearch from '../HeaderSearch';
 import styles from './index.less';
+import { createFromIconfontCN } from '@ant-design/icons';
 
 export type SiderTheme = 'light' | 'dark';
 
@@ -21,28 +21,64 @@ const GlobalHeaderRight: React.FC<{}> = () => {
     return null;
   }
 
+  const IconFont = createFromIconfontCN({
+    scriptUrl: initialState.settings.iconfontUrl,
+  });
+
+  const settings = initialState.settings;
   const className = styles.right;
+
+  // 解析actions
+  const parseHeaderActions = (actions:any) => {
+    
+    let actionComponent:any = null;
+    actionComponent = (
+      actions.map((item:any,key:any) => {
+        let component:any = null;
+        switch (item.component) {
+          case 'a':
+            // 跳转行为
+            if(item.target === '_blank') {
+              component = 
+              <a key={key} href={item.href} target={item.target} style={item.style}>
+                {item.title}
+              </a>
+            } else {
+              component = 
+              <Link key={key} style={item.style} to={item.href}>
+                {item.title}
+              </Link>
+            }
+            break;
+            
+          case 'icon':
+            if(item.target === '_blank') {
+              component = 
+              <a key={key} href={item.href} target={item.target} style={item.style}>
+                <Tooltip title={item.tooltip}>
+                  {item.icon ? <IconFont type={item.icon} /> : null}
+                </Tooltip>
+              </a>
+            } else {
+              component = 
+              <Link key={key} style={item.style} to={item.href}>
+                {item.icon ? <IconFont type={item.icon} /> : null}
+              </Link>
+            }
+            break;
+
+          default:
+            break;
+        }
+        return component;
+      })
+    )
+    return actionComponent;
+  }
 
   return (
     <Space className={className}>
-      <HeaderSearch
-        className={`${styles.action} ${styles.search}`}
-        placeholder="站内搜索"
-        options={[]}
-        // onSearch={value => {
-        //   //console.log('input', value);
-        // }}
-      />
-      <Tooltip title="使用文档">
-        <span
-          className={styles.action}
-          onClick={() => {
-            window.location.href = 'http://www.quarkcms.com/';
-          }}
-        >
-          <QuestionCircleOutlined />
-        </span>
-      </Tooltip>
+      { settings.headerActions ? parseHeaderActions(settings.headerActions) : null}
       <Avatar menu={true} />
       {REACT_APP_ENV && (
         <span>
