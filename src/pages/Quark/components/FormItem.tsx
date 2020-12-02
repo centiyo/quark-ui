@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useModel } from 'umi';
+import { get } from '@/services/action';
 import {
   ProFormText,
   ProFormCheckbox,
@@ -51,11 +52,36 @@ const FormItem: React.FC<FormItem> = (props:any) => {
   
   //hack
   const [random, setRandom] = useState(0);
+  const [items, setItems] = useState(props.items);
 
   const onChange = (value:any,name:string) => {
     let item = {};
     item[name] = value;
     props.form.setFieldsValue(item);
+    setRandom(Math.random);
+  };
+
+  const onSelectChange = async (value:any, name:string, load:any = null) => {
+    if(load) {
+      const promises = items.map(async (item:any,key:any) => {
+        if(load.field === item.name && load.api) {
+          const result = await get({
+            actionUrl: load.api,
+            search: value
+          });
+
+          item.options = result.data;
+        }
+        return item;
+      });
+      
+      const getItems = await Promise.all(promises);
+      setItems(getItems);
+    }
+
+    let getItem = {};
+    getItem[name] = value;
+    props.form.setFieldsValue(getItem);
     setRandom(Math.random);
   };
 
@@ -140,6 +166,9 @@ const FormItem: React.FC<FormItem> = (props:any) => {
                 maxLength={item.maxLength}
                 autoSize={item.autoSize}
                 onChange={(e)=>{onChange(e.target.value,item.name)}}
+                onKeyPress={(e) => {
+                  e.stopPropagation();
+                }}
               />
             </Form.Item>;
             break;
@@ -334,7 +363,7 @@ const FormItem: React.FC<FormItem> = (props:any) => {
                 mode={item.mode}
                 allowClear={item.allowClear}
                 size={item.size}
-                onChange={(value)=>{onChange(value,item.name)}}
+                onChange={(value)=>{onSelectChange(value,item.name,item.load)}}
               />
             </Form.Item>;
             break;
@@ -666,7 +695,7 @@ const FormItem: React.FC<FormItem> = (props:any) => {
   }
 
   return (
-    props.items ? formItemRender(props.items) : null
+    items.length > 0 ? formItemRender(items) : null
   );
 }
 
