@@ -1,8 +1,6 @@
-import { BasicLayoutProps, Settings as LayoutSettings } from '@ant-design/pro-layout';
+import { Settings as LayoutSettings } from '@ant-design/pro-layout';
 import { notification } from 'antd';
 import { history, RequestConfig } from 'umi';
-import RightContent from '@/components/RightContent';
-import Footer from '@/components/Footer';
 import { ResponseError } from 'umi-request';
 import { queryQuarkInfo, queryQuarkLayout, queryQuarkMenus, queryAccountInfo } from '@/services/quark';
 import defaultSettings from '../config/defaultSettings';
@@ -135,7 +133,7 @@ const errorHandler = (error: ResponseError) => {
 };
 
 export const request: RequestConfig = {
-  errorHandler: errorHandler,
+  errorHandler,
   // 请求拦截器
   requestInterceptors: [
     (url: string, options) => {

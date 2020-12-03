@@ -27,4 +27,10 @@ declare namespace API {
     extra: any;
     status: string;
   }
+
+  export interface LoginStateType {
+    status?: 'success' | 'error';
+    type?: string;
+  }
+
 }

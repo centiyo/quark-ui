@@ -105,20 +105,20 @@ const ComponentRender: React.FC<any> = (props:any) => {
     }
     return component;
   }
-  
+
   const componentRender = (content:any) => {
     if(content === null) {
       return null;
     }
-  
+
     if(typeof content === 'string' || typeof content === 'number') {
       return <span>{content}</span>;
     }
-  
+
     if(content.hasOwnProperty('component')) {
       return parseComponent(content);
     }
-  
+
     let component:any = null;
     if(content.hasOwnProperty(0)) {
       component = (
@@ -127,7 +127,7 @@ const ComponentRender: React.FC<any> = (props:any) => {
         })
       )
     }
-  
+
     return component;
   }
 

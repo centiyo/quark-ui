@@ -10,7 +10,7 @@ export default defineConfig({
     type: 'none',
     exclude: [],
   },
-  history: { type: 'hash' },
+  history: { type: 'browser' },
   dll: false,
   hash: true,
   antd: {},
@@ -75,7 +75,7 @@ export default defineConfig({
           path: '/account/settings/security',
           component: '../pages/Account/Settings/Security',
         },
-        { 
+        {
           path: '/sms/send',
           component: '../pages/Sms/Send'
         },

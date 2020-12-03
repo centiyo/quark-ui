@@ -19,12 +19,7 @@ export async function getSmsCode(params: any) {
   });
 }
 
-export async function accountLogin(params: any) {
-  return request('/api/admin/login', {
-    method: 'POST',
-    data: params,
-  });
-}
+
 
 export async function accountLogout() {
   const $request = request('/api/admin/logout');

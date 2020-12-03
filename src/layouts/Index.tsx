@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import logo from '@/assets/logo.png';
 
 const Index: React.FC<{}> = (props) => {
+  // 获取当前页面api地址
   const api = history.location.query.api;
   const { initialState } = useModel('@@initialState');
   const accountInfo = initialState.accountInfo;
@@ -15,6 +16,7 @@ const Index: React.FC<{}> = (props) => {
   const [menuOpenKeys, setMenuOpenKeys] = useState([quarkMenus?quarkMenus[0]['key']:null]);
   const [menuSelectedKeys, setMenuSelectedKeys] = useState([quarkMenus?quarkMenus[0]['children'][0]['key']:null]);
 
+  // 从menus中根据当前api地址获取页面标题
   useEffect(() => {
     if(quarkMenus) {
       const title = getMenuName(quarkMenus, window.location.href);
@@ -22,6 +24,7 @@ const Index: React.FC<{}> = (props) => {
     }
   }, [api]);
 
+  // 获取页面标题
   const getMenuName = (menus: any, path: string) => {
     let menuName = '';
     menus.map((item: any) => {
