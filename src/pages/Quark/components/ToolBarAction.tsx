@@ -1,16 +1,18 @@
 import React from 'react';
 import { ActionType }from '@ant-design/pro-table';
-import { useModel, Link } from 'umi';
+import { history, useModel, Link } from 'umi';
 import { get } from '@/services/action';
 import ModalForm from './ModalForm';
 import DrawerForm from './DrawerForm';
+import { stringify } from 'qs';
 import {
   Button,
   Modal,
   Popconfirm,
   Dropdown,
   Menu,
-  Space
+  Space,
+  message
 } from 'antd';
 import { ExclamationCircleOutlined, DownOutlined, createFromIconfontCN } from '@ant-design/icons';
 
@@ -25,6 +27,29 @@ const ToolBarAction: React.FC<Action> = (props) => {
     scriptUrl: initialState.settings.iconfontUrl,
   });
   const { confirm } = Modal;
+
+  // 替换查询变量
+  const replaceQueryVariable = (url:any) => 
+  {
+    let query = {};
+    var urls = url.split("?");
+    if(urls) {
+      if(urls.length>1) {
+        var vars = urls[1].split("&");
+        for (var i=0;i<vars.length;i++) {
+          var pair = vars[i].split("=");
+          if(history.location.query.search) {
+            if(pair[1] === '{search}'){
+              pair[1] = history.location.query.search;
+            }
+          }
+          query[pair[0]] = pair[1];
+        }
+        return urls[0]+'?'+stringify(query)
+      }
+    }
+    return url;
+  }
 
   // 显示确认弹框
   const showConfirm = async (confirmInfo:any, api:string) => {
@@ -44,13 +69,15 @@ const ToolBarAction: React.FC<Action> = (props) => {
   // 执行行为
   const executeAction = async (api:string) => {
     const result = await get({
-      actionUrl: api
+      actionUrl: replaceQueryVariable(api)
     });
 
     if(result.status === 'success') {
       if (props.current) {
         props.current.reload();
       }
+    } else {
+      message.error(result.msg);
     }
   }
 
@@ -66,12 +93,12 @@ const ToolBarAction: React.FC<Action> = (props) => {
       // 跳转行为
       if(item.target === '_blank') {
         component = 
-        <a key={item.key} href={item.href} target={item.target} style={item.style}>
+        <a key={item.key} href={replaceQueryVariable(item.href)} target={item.target} style={item.style}>
           {item.name}
         </a>
       } else {
         component = 
-        <Link key={item.key} style={item.style} to={item.href}>
+        <Link key={item.key} style={item.style} to={replaceQueryVariable(item.href)}>
           {item.name}
         </Link>
       }

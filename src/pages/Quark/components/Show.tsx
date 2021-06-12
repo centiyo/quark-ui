@@ -1,6 +1,11 @@
 import React from 'react';
 import ProCard from '@ant-design/pro-card';
 import ProDescriptions from '@ant-design/pro-descriptions';
+import {
+  Space,
+  Button,
+  Image
+} from 'antd';
 import { Link } from 'umi';
 
 const Show: React.FC<any> = (props:any) => {
@@ -12,7 +17,15 @@ const Show: React.FC<any> = (props:any) => {
         let component = item.value;
 
         if(item.image) {
-          component = <img src={component} width={item.image.width} height={item.image.height} />
+          if(typeof component === 'object') {
+            component = (component.map((componentItem:any,key:any) => {
+              return <Image src={componentItem} width={item.image.width} height={item.image.height} />
+            }));
+
+            component = <Image.PreviewGroup><Space>{component}</Space></Image.PreviewGroup>
+          } else {
+            component = <Image src={component} width={item.image.width} height={item.image.height} />
+          }
         }
 
         if(item.link) {
@@ -41,6 +54,14 @@ const Show: React.FC<any> = (props:any) => {
         size={props.show.size}
         layout={props.show.layout}
         colon={props.show.colon}
+        extra={
+          props.show.backButton ? 
+            <Button type="link" onClick={e => {history.go(-1);}}>
+              返回上一页
+            </Button>
+          :
+            null
+        }
       >
         {itemRender(props.show.items)}
       </ProDescriptions>

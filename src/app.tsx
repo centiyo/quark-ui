@@ -36,7 +36,7 @@ export async function getInitialState(): Promise<{
   const quarkInfo = await queryQuarkInfo();
 
   // 如果是登录页面，不执行
-  if (history.location.pathname !== '/user/login' && sessionStorage.getItem('token') !== null) {
+  if (history.location.pathname !== '/user/login' && history.location.pathname !== '/' && sessionStorage.getItem('token') !== null) {
     try {
       const accountInfo = await fetchUserInfo();
       const quarkLayout = await fetchLayoutInfo();
@@ -67,28 +67,6 @@ export async function getInitialState(): Promise<{
   };
 }
 
-// export const layout = ({
-//   initialState,
-// }: {
-//   initialState: { settings?: LayoutSettings; currentUser?: API.AccountInfo };
-// }): BasicLayoutProps => {
-//   return {
-//     rightContentRender: () => <RightContent />,
-//     disableContentMargin: false,
-//     footerRender: () => <Footer />,
-//     onPageChange: () => {
-//       const { currentUser } = initialState;
-//       const { location } = history;
-//       // 如果没有登录，重定向到 login
-//       if (!currentUser?.userid && location.pathname !== '/user/login') {
-//         history.push('/user/login');
-//       }
-//     },
-//     menuHeaderRender: undefined,
-//     ...initialState?.settings,
-//   };
-// };
-
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
   201: '新建或修改数据成功。',
@@ -112,6 +90,7 @@ const codeMessage = {
  * 异常处理程序
  */
 const errorHandler = (error: ResponseError) => {
+
   const { response } = error;
   if (response && response.status) {
     const errorText = codeMessage[response.status] || response.statusText;
@@ -121,6 +100,10 @@ const errorHandler = (error: ResponseError) => {
       message: `请求错误 ${status}: ${url}`,
       description: errorText,
     });
+
+    if(response.status == 401){ //未登录跳转登录
+      history.push('/user/login');
+    }
   }
 
   if (!response) {
@@ -129,6 +112,7 @@ const errorHandler = (error: ResponseError) => {
       message: '网络异常',
     });
   }
+
   throw error;
 };
 
@@ -137,7 +121,9 @@ export const request: RequestConfig = {
   // 请求拦截器
   requestInterceptors: [
     (url: string, options) => {
-      options.headers = { Authorization: `Bearer ${sessionStorage.getItem('token') ?? ''}` };
+      options.headers = {
+        Accept: 'application/json',
+        Authorization: `Bearer ${sessionStorage.getItem('token') ?? ''}` };
       return { url, options };
     }
   ],

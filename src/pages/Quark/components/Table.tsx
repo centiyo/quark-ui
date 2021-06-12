@@ -12,6 +12,7 @@ import { QrcodeOutlined } from '@ant-design/icons';
 import BatchAction from './BatchAction';
 import ToolBarAction from './ToolBarAction';
 import { EditableRow, EditableCell } from './Editable';
+import styles from './Table.less'
 
 export interface Table {
   key: number;
@@ -27,17 +28,49 @@ const Table: React.FC<Table> = (props:any) => {
 
     if(column.link) {
       if(text.target === '_blank') {
-        columnComponent = <a href={text.href} target={text.target}>{text.title}</a>
+        if(column.isHtml) {
+          columnComponent = 
+          <a
+            style={column.style}
+            href={text.href}
+            target={text.target}
+            dangerouslySetInnerHTML={{__html:text.title}}
+          />
+        } else {
+          columnComponent = 
+          <a
+            style={column.style}
+            href={text.href}
+            target={text.target}
+          >
+            {text.title}
+          </a>
+        }
       } else {
-        columnComponent =
-        <Link
-          to={text.href}
-        >
-          {text.title}
-        </Link>
+        if(column.isHtml) {
+          columnComponent =
+          <Link
+            to={text.href}
+            style={column.style}
+          >
+            <span dangerouslySetInnerHTML={{__html:text.title}}/>
+          </Link>
+        } else {
+          columnComponent =
+          <Link
+            to={text.href}
+            style={column.style}
+          >
+            {text.title}
+          </Link>
+        }
       }
     } else {
-      columnComponent = text;
+      if(column.isHtml) {
+        columnComponent = <span style={column.style} dangerouslySetInnerHTML={{__html:text}} />;
+      } else {
+        columnComponent = <span style={column.style}>{text}</span>;
+      }
     }
 
     if(column.image) {
@@ -45,7 +78,7 @@ const Table: React.FC<Table> = (props:any) => {
     }
 
     if(column.qrcode) {
-      let img:any = <img src={columnComponent} width={column.qrcode.width} height={column.qrcode.height} />;
+      let img:any = <img src={text} width={column.qrcode.width} height={column.qrcode.height} />;
       columnComponent =
       <Popover placement="left" content={img}>
         <QrcodeOutlined style={{cursor:'pointer',fontSize:'18px'}} />
@@ -129,7 +162,7 @@ const Table: React.FC<Table> = (props:any) => {
     });
 
     const table = findComponent(result.data,key);
-    return table.datasource;
+    return table;
   }
 
   return (
@@ -167,7 +200,7 @@ const Table: React.FC<Table> = (props:any) => {
         options={props.table.options}
         search={false}
         request={async (params:any, sorter:any, filter:any) => {
-          let query = {},datasource = null;
+          let query = {},table = null;
           query = history.location.query;
 
           query['page'] = params.current;
@@ -184,19 +217,34 @@ const Table: React.FC<Table> = (props:any) => {
 
           history.push({ pathname: history.location.pathname, query: query });
 
-          datasource = await getTableDatasource(props.table.key);
+          table = await getTableDatasource(props.table.key);
 
           return Promise.resolve({
-            data: datasource,
+            data: table.datasource,
+            total: table.pagination.total,
             success: true,
           });
         }}
-        pagination={props.table.pagination}
+        pagination={{
+          pageSize: props.table.pagination.pageSize,
+          current: props.table.pagination.current,
+          defaultCurrent: props.table.pagination.defaultCurrent
+        }}
         dateFormatter={props.table.dateFormatter}
         columnEmptyText={props.table.columnEmptyText}
         toolbar={{
           multipleLine: false,
           actions: props.table.toolbar.actions.length > 0 ? [<ToolBarAction key={props.table.toolbar.key} actions={props.table.toolbar.actions} current={actionRef.current} />] : undefined,
+        }}
+        scroll={props.table.scroll}
+        rowClassName={(record, index)=> {
+          if(props.table.striped) {
+            if(index%2 != 0) {
+              return styles.oddTr;
+            } 
+          } else {
+            return null;
+          }
         }}
       />
     </>
